@@ -1,12 +1,12 @@
-import chalk, {Chalk} from "chalk";
+import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import Table, { HorizontalTableRow } from "cli-table3";
 import { commify } from "@ethersproject/units";
 
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { GasReporterOptions, MethodDataItem } from "../../types";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import type { GasReporterOptions, MethodDataItem } from "../../types.js";
 
-import { GasData } from "../gasData";
+import type { GasData } from "../gasData.js";
 
 /**
  * LEGACY ONLY

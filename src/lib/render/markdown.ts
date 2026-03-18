@@ -1,21 +1,21 @@
 import { EOL } from "os";
-import  table from "markdown-table";
+import table from "markdown-table";
 import _ from "lodash";
 import { commify } from "@ethersproject/units";
 
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { UNICODE_CIRCLE, UNICODE_TRIANGLE } from "../../constants";
-import { GasData } from "../gasData";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import { UNICODE_CIRCLE, UNICODE_TRIANGLE } from "../../constants.js";
+import type { GasData } from "../gasData.js";
 import {
   indentMarkdown,
   indentMarkdownWithSymbol,
   entitleMarkdown,
   getCommonTableVals,
   costIsBelowPrecision,
-  markdownBold
-} from "../../utils/ui";
+  markdownBold,
+} from "../../utils/ui.js";
 
-import { GasReporterOptions, MethodDataItem } from "../../types";
+import type { GasReporterOptions, MethodDataItem } from "../../types.js";
 interface Section {row: string[], contractName: string, methodName: string}
 
 /**

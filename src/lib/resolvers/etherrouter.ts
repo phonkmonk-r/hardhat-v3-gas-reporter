@@ -1,10 +1,9 @@
 import { Interface } from "@ethersproject/abi";
 import { hexStripZeros } from "@ethersproject/bytes";
 
-import { getHashedFunctionSignature } from "../../utils/sources";
-import { CustomGasReporterResolver, JsonRpcTx } from "../../types";
-import { Resolver } from "./index";
-
+import { getHashedFunctionSignature } from "../../utils/sources.js";
+import type { CustomGasReporterResolver, JsonRpcTx } from "../../types.js";
+import type { Resolver } from "./index.js";
 
 const ABI = ["function resolver()", "function lookup(bytes4 sig)"];
 
@@ -32,15 +31,18 @@ export class EtherRouterResolver implements CustomGasReporterResolver {
    * trapped in an infinite loop.
    */
   public ignore(): string[] {
-    const functions = new Interface(ABI).functions
-    const signatures = Object.keys(functions)
+    const functions = new Interface(ABI).functions;
+    const signatures = Object.keys(functions);
     return [
       getHashedFunctionSignature(signatures[0]),
-      getHashedFunctionSignature(signatures[1])
+      getHashedFunctionSignature(signatures[1]),
     ];
   }
 
-  public async resolve(this: Resolver, transaction: JsonRpcTx): Promise<string | null> {
+  public async resolve(
+    this: Resolver,
+    transaction: JsonRpcTx
+  ): Promise<string | null> {
     let contractAddress;
     let contractName;
 
@@ -55,23 +57,31 @@ export class EtherRouterResolver implements CustomGasReporterResolver {
 
       // The router has a public state variable called `resolver()` which stores the
       // address of a contract which maps method signatures to their parent contracts.
-      const resolverAddress = await this.hre.network.provider.send("eth_call", [{
-          to: transaction.to!,
-          data: iface.encodeFunctionData("resolver()", [])
-      }]);
+      const resolverAddress = (await this.hre.__hhgrec.provider!.request({
+        method: "eth_call",
+        params: [
+          {
+            to: transaction.to!,
+            data: iface.encodeFunctionData("resolver()", []),
+          },
+        ],
+      })) as string;
 
       // Now we'll call the EtherRouterResolver contract's `lookup(sig)` method to get
       // the address of the contract our tx was actually getting forwarded to.
-      contractAddress = await this.hre.network.provider.send("eth_call",[
-        {
-          to: hexStripZeros(resolverAddress),
-          data: iface.encodeFunctionData("lookup(bytes4)", [signature])
-        }
-      ]);
+      contractAddress = (await this.hre.__hhgrec.provider!.request({
+        method: "eth_call",
+        params: [
+          {
+            to: hexStripZeros(resolverAddress),
+            data: iface.encodeFunctionData("lookup(bytes4)", [signature]),
+          },
+        ],
+      })) as string;
 
       contractAddress = hexStripZeros(contractAddress);
 
-    // Don't forget this is all speculative...
+      // Don't forget this is all speculative...
     } catch (err) {
       this.unresolvedCalls++;
       return null;

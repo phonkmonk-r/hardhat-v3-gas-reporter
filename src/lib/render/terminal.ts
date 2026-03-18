@@ -1,20 +1,20 @@
-import chalk, {Chalk} from "chalk";
+import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import Table, { HorizontalTableRow } from "cli-table3";
 import { commify } from "@ethersproject/units";
 
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { UNICODE_CIRCLE, UNICODE_TRIANGLE } from "../../constants";
-import { GasData } from "../gasData";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import { UNICODE_CIRCLE, UNICODE_TRIANGLE } from "../../constants.js";
+import type { GasData } from "../gasData.js";
 import {
   getCommonTableVals,
   indentText,
   indentTextWithSymbol,
   costIsBelowPrecision,
-  renderWithGasDelta
-} from "../../utils/ui";
+  renderWithGasDelta,
+} from "../../utils/ui.js";
 
-import { GasReporterOptions, MethodDataItem } from "../../types";
+import type { GasReporterOptions, MethodDataItem } from "../../types.js";
 interface Section {row: HorizontalTableRow, contractName: string, methodName: string}
 
 /**

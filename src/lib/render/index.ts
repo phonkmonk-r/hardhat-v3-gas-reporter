@@ -1,21 +1,21 @@
-import type { GasData } from "../gasData";
+import type { GasData } from "../gasData.js";
 import { writeFileSync } from "fs";
 import path from "path";
 
-import { HardhatRuntimeEnvironment as HRE } from "hardhat/types";
+import type { HardhatRuntimeEnvironment as HRE } from "hardhat/types/hre";
 import {
   TABLE_NAME_LEGACY,
   TABLE_NAME_MARKDOWN,
   TABLE_NAME_TERMINAL,
-  CACHE_FILE_NAME
-} from "../../constants";
-import { getSolcInfo } from "../../utils/sources";
-import { warnReportFormat } from "../../utils/ui";
-import { GasReporterOptions } from "../../types";
-import { generateTerminalTextTable } from "./terminal";
-import { generateLegacyTextTable } from "./legacy";
-import { generateMarkdownTable} from "./markdown";
-import { generateJSONData, loadJSONCache } from "./json";
+  CACHE_FILE_NAME,
+} from "../../constants.js";
+import { getSolcInfo } from "../../utils/sources.js";
+import { warnReportFormat } from "../../utils/ui.js";
+import type { GasReporterOptions } from "../../types.js";
+import { generateTerminalTextTable } from "./terminal.js";
+import { generateLegacyTextTable } from "./legacy.js";
+import { generateMarkdownTable } from "./markdown.js";
+import { generateJSONData, loadJSONCache } from "./json.js";
 
 
 /**
@@ -55,7 +55,13 @@ export function render(
 ) {
   const data = hre.__hhgrec.collector!.data;
   options.blockGasLimit = hre.__hhgrec.blockGasLimit;
-  options.solcInfo = getSolcInfo(hre.config.solidity.compilers[0]);
+  // HH3 uses build profiles; fall back to HH2 path if needed
+  const solidity = hre.config.solidity as any;
+  const solcConfig =
+    solidity?.compilers?.[0] ??
+    solidity?.profiles?.default?.compilers?.[0] ??
+    {};
+  options.solcInfo = getSolcInfo(solcConfig);
 
   if (options.trackGasDeltas) {
     options.cachePath = options.cachePath || path.resolve(

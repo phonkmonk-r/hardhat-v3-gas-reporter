@@ -4,8 +4,8 @@ import {
   DEFAULT_GET_BLOCK_API_ARGS,
   DEFAULT_BLOB_BASE_FEE_API_ARGS,
   DEFAULT_BASE_FEE_PER_BYTE_API_ARGS,
-} from "../constants"
-import { GasReporterOptions } from "../types"
+} from "../constants.js"
+import type { GasReporterOptions } from "../types.js"
 
 /**
  * Returns the CMC token symbol for a chain's native token. Uses chain configs below

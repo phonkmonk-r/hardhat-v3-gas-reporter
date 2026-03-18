@@ -1,11 +1,15 @@
-import { Collector } from "./lib/collector";
-import { GasData } from "./lib/gasData";
-import { Resolver } from "./lib/resolvers";
+import { Collector } from "./lib/collector.js";
+import { GasData } from "./lib/gasData.js";
+import { Resolver } from "./lib/resolvers/index.js";
 
-declare module "hardhat/types/config" {
-  interface HardhatUserConfig {
-    gasReporter?: GasReporterOptions;
-  }
+/**
+ * Minimal transaction receipt type (replaces hardhat internal RpcReceiptOutput)
+ */
+export interface TransactionReceipt {
+  contractAddress: string | null;
+  gasUsed: string;
+  status?: string;
+  transactionHash?: string;
 }
 
 export type OptimismHardfork = "bedrock" | "ecotone" | undefined;
@@ -173,6 +177,7 @@ export interface GasReporterOptions {
 export interface GasReporterExecutionContext {
   collector?: Collector,
   task?: string,
+  provider?: any, // EIP1193Provider - cached network provider reference
   usingOZ?: boolean,
   usingViem?: boolean,
   usingCall?: boolean,

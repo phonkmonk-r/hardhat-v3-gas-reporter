@@ -1,8 +1,8 @@
 import axios from "axios";
 
 import { defaultAbiCoder } from "@ethersproject/abi";
-import { DEFAULT_COINMARKET_BASE_URL, DEFAULT_BLOB_BASE_FEE } from "../constants";
-import { GasReporterOptions } from "../types";
+import { DEFAULT_COINMARKET_BASE_URL, DEFAULT_BLOB_BASE_FEE } from "../constants.js";
+import type { GasReporterOptions } from "../types.js";
 
 import {
   warnCMCRemoteCallFailed,
@@ -11,9 +11,9 @@ import {
   warnBlobBaseFeeRemoteCallFailed,
   warnBaseFeePerByteRemoteCallFailed,
   warnUnsupportedChainConfig,
-} from "./ui";
-import { hexWeiToIntGwei, getArbitrumBaseFeePerByte } from "./gas";
-import { getTokenForChain, getGasPriceUrlForChain, getBlockUrlForChain, getBlobBaseFeeUrlForChain, getBaseFeePerByteUrlForChain } from "./chains";
+} from "./ui.js";
+import { hexWeiToIntGwei, getArbitrumBaseFeePerByte } from "./gas.js";
+import { getTokenForChain, getGasPriceUrlForChain, getBlockUrlForChain, getBlobBaseFeeUrlForChain, getBaseFeePerByteUrlForChain } from "./chains.js";
 
 /**
  * Fetches gas, base, & blob fee rates from etherscan as well as current market value of

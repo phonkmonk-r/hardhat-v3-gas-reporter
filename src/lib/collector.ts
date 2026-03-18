@@ -1,18 +1,22 @@
-import type { RpcReceiptOutput } from "hardhat/internal/hardhat-network/provider/output"
 import { hexlify } from "@ethersproject/bytes";
 
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { getMethodID } from "../utils/sources";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import { getMethodID } from "../utils/sources.js";
 import {
   getCalldataGasForNetwork,
   hexToDecimal,
   getIntrinsicGas,
-  getGasSubIntrinsic
-} from "../utils/gas";
-import { GasReporterOptions, JsonRpcTx, FakeTx, ValidatedRequestArguments } from "../types"
-import { GasData } from "./gasData";
-import { Resolver } from "./resolvers";
-
+  getGasSubIntrinsic,
+} from "../utils/gas.js";
+import type {
+  GasReporterOptions,
+  JsonRpcTx,
+  FakeTx,
+  ValidatedRequestArguments,
+  TransactionReceipt,
+} from "../types.js";
+import { GasData } from "./gasData.js";
+import { Resolver } from "./resolvers/index.js";
 
 /**
  * Collects gas usage data, associating it with the relevant contracts, methods.
@@ -31,14 +35,16 @@ export class Collector {
   /**
    * Method called by the request monitor on the provider to collect deployment
    * and methods gas data
-   * @param {JsonRpcTx} transaction [description]
-   * @param {TransactionReceipt} receipt     [description]
+   * @param {JsonRpcTx} transaction
+   * @param {TransactionReceipt} receipt
    */
-  public async collectTransaction(tx: JsonRpcTx, receipt: RpcReceiptOutput): Promise<void> {
+  public async collectTransaction(
+    tx: JsonRpcTx,
+    receipt: TransactionReceipt
+  ): Promise<void> {
     if (receipt.contractAddress !== null)
       await this._collectDeploymentsData(tx, receipt);
-    else
-      await this._collectMethodsData(tx, receipt, false);
+    else await this._collectMethodsData(tx, receipt, false);
   }
 
   /**
@@ -46,21 +52,25 @@ export class Collector {
    * @param {ValidatedRequestArguments}    params.args  of the call
    * @param {number}                       estimate_gas result
    */
-  public async collectCall(args: ValidatedRequestArguments, gas: number): Promise<void> {
+  public async collectCall(
+    args: ValidatedRequestArguments,
+    gas: number
+  ): Promise<void> {
     const callGas = gas - getIntrinsicGas(args.params[0].data);
     const fakeTx = {
       input: args.params[0].data,
       to: args.params[0].to,
-      isCall: true
-    }
+      isCall: true,
+    };
 
     const fakeReceipt = {
-      gasUsed: hexlify(callGas)
-    }
+      gasUsed: hexlify(callGas),
+      contractAddress: null,
+    };
 
     await this._collectMethodsData(
       fakeTx as FakeTx,
-      fakeReceipt as unknown as RpcReceiptOutput,
+      fakeReceipt as TransactionReceipt,
       true
     );
   }
@@ -70,7 +80,10 @@ export class Collector {
    * @param  {JsonRpcTx}          tx       return value of `getTransactionByHash`
    * @param  {TransactionReceipt} receipt
    */
-  private async _collectDeploymentsData(tx: JsonRpcTx, receipt: RpcReceiptOutput): Promise<void> {
+  private async _collectDeploymentsData(
+    tx: JsonRpcTx,
+    receipt: TransactionReceipt
+  ): Promise<void> {
     const match = this.data.getContractByDeploymentInput(tx.input!);
 
     if (match !== null) {
@@ -80,7 +93,7 @@ export class Collector {
       );
 
       const executionGas = hexToDecimal(receipt.gasUsed);
-      const calldataGas = getCalldataGasForNetwork(this.options, tx);
+      const calldataGas = await getCalldataGasForNetwork(this.options, tx);
 
       match.gasData.push(executionGas);
       match.callData.push(calldataGas);
@@ -95,7 +108,7 @@ export class Collector {
    */
   private async _collectMethodsData(
     tx: JsonRpcTx | FakeTx,
-    receipt: RpcReceiptOutput,
+    receipt: TransactionReceipt,
     isCall: boolean
   ): Promise<void> {
     let contractName = await this.data.getNameByAddress(tx.to);
@@ -107,9 +120,7 @@ export class Collector {
 
     // Case: hidden contract factory deployment
     if (contractName === null) {
-      contractName = await this.resolver.resolveByDeployedBytecode(
-        tx.to
-      );
+      contractName = await this.resolver.resolveByDeployedBytecode(tx.to);
     }
 
     // Case: all else fails, use first match strategy
@@ -120,15 +131,16 @@ export class Collector {
     const id = getMethodID(contractName!, tx.input!);
 
     if (this.data.methods[id] !== undefined) {
-      const executionGas = (this.options.includeIntrinsicGas)
+      const executionGas = this.options.includeIntrinsicGas
         ? hexToDecimal(receipt.gasUsed)
         : getGasSubIntrinsic(tx.input, hexToDecimal(receipt.gasUsed));
 
       // If L2 txs have intrinsic turned off, we assume caller
       // is paying the L1 overhead
-      const calldataGas = (isCall || !this.options.includeIntrinsicGas)
-        ? 0
-        : getCalldataGasForNetwork(this.options, tx as JsonRpcTx);
+      const calldataGas =
+        isCall || !this.options.includeIntrinsicGas
+          ? 0
+          : await getCalldataGasForNetwork(this.options, tx as JsonRpcTx);
 
       const intrinsicGas = getIntrinsicGas(tx.input);
 
@@ -136,7 +148,8 @@ export class Collector {
       this.data.methods[id].callData.push(calldataGas);
       this.data.methods[id].intrinsicGas.push(intrinsicGas);
       this.data.methods[id].numberOfCalls += 1;
-      this.data.methods[id].isCall = this.data.methods[id].isCall || !this.options.includeIntrinsicGas;
+      this.data.methods[id].isCall =
+        this.data.methods[id].isCall || !this.options.includeIntrinsicGas;
     } else {
       this.resolver.unresolvedCalls++;
     }
@@ -151,7 +164,7 @@ export class Collector {
    */
   private _isProxied(name: string | null, input: string): boolean {
     if (name !== null) {
-      return (this.data.methods[getMethodID(name, input)] === undefined)
+      return this.data.methods[getMethodID(name, input)] === undefined;
     }
     return false;
   }

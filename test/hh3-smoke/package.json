@@ -1,0 +1,11 @@
+{
+  "name": "hh3-smoke-test",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "forge-std": "^1.1.2"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.3"
+  }
+}

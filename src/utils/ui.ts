@@ -6,9 +6,9 @@ import {
   DEFAULT_GAS_PRICE_PRECISION,
   TABLE_NAME_LEGACY,
   TABLE_NAME_MARKDOWN,
-  TABLE_NAME_TERMINAL
-} from "../constants";
-import { GasReporterOptions } from "../types";
+  TABLE_NAME_TERMINAL,
+} from "../constants.js";
+import type { GasReporterOptions } from "../types.js";
 
 const log = console.log;
 

@@ -1,6 +1,9 @@
 import { writeFileSync, readFileSync } from "fs";
-import { GasData } from "../gasData";
-import { GasReporterOptions, GasReporterOutput } from "../../types";
+import { createRequire } from "module";
+import type { GasData } from "../gasData.js";
+import type { GasReporterOptions, GasReporterOutput } from "../../types.js";
+
+const require = createRequire(import.meta.url);
 
 /**
  * Writes accumulated data and the current options to gasReporterOutput.json so it
@@ -12,7 +15,7 @@ import { GasReporterOptions, GasReporterOutput } from "../../types";
 export function generateJSONData(
   data: GasData,
   options: GasReporterOptions,
-  toolchain="hardhat"
+  toolchain = "hardhat"
 ) {
   const pkg = require("../../../package.json");
   _sanitizeGasData(data, options);

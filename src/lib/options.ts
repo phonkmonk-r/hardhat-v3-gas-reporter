@@ -1,4 +1,4 @@
-import { HardhatUserConfig } from "hardhat/types";
+import type { HardhatUserConfig } from "hardhat/types/config";
 import {
   DEFAULT_CURRENCY,
   DEFAULT_CURRENCY_DISPLAY_PRECISION,
@@ -8,10 +8,10 @@ import {
   BASE_ECOTONE_BLOB_BASE_FEE_SCALAR,
   OPTIMISM_ECOTONE_BASE_FEE_SCALAR,
   OPTIMISM_ECOTONE_BLOB_BASE_FEE_SCALAR,
-  TABLE_NAME_TERMINAL
-} from "../constants";
+  TABLE_NAME_TERMINAL,
+} from "../constants.js";
 
-import { GasReporterOptions, OptimismHardfork } from "../types";
+import type { GasReporterOptions, OptimismHardfork } from "../types.js";
 
 /**
  * Validates Optimism hardfork option
@@ -27,7 +27,9 @@ function isOptimismHardfork(hardfork: string | undefined) {
 /**
  * Sets default reporter options
  */
-export function getDefaultOptions(userConfig: Readonly<HardhatUserConfig>): GasReporterOptions {
+export function getDefaultOptions(
+  userConfig: Readonly<HardhatUserConfig>
+): GasReporterOptions {
   let optimismHardfork: OptimismHardfork;
   let opStackBaseFeeScalar: number = 0;
   let opStackBlobBaseFeeScalar: number = 0;
@@ -37,7 +39,7 @@ export function getDefaultOptions(userConfig: Readonly<HardhatUserConfig>): GasR
   // NB: silently coercing to default if there's a misspelling or option not avail
   if (userOptions) {
     if (userOptions.L2 === "optimism" || userOptions.L2 === "base")
-      if (!isOptimismHardfork(userOptions.optimismHardfork)){
+      if (!isOptimismHardfork(userOptions.optimismHardfork)) {
         optimismHardfork = DEFAULT_OPTIMISM_HARDFORK;
       }
 
@@ -46,7 +48,7 @@ export function getDefaultOptions(userConfig: Readonly<HardhatUserConfig>): GasR
         opStackBaseFeeScalar = OPTIMISM_ECOTONE_BASE_FEE_SCALAR;
       }
       if (!userOptions.opStackBlobBaseFeeScalar) {
-        opStackBlobBaseFeeScalar = OPTIMISM_ECOTONE_BLOB_BASE_FEE_SCALAR
+        opStackBlobBaseFeeScalar = OPTIMISM_ECOTONE_BLOB_BASE_FEE_SCALAR;
       }
     }
 
@@ -55,7 +57,7 @@ export function getDefaultOptions(userConfig: Readonly<HardhatUserConfig>): GasR
         opStackBaseFeeScalar = BASE_ECOTONE_BASE_FEE_SCALAR;
       }
       if (!userOptions.opStackBlobBaseFeeScalar) {
-        opStackBlobBaseFeeScalar = BASE_ECOTONE_BLOB_BASE_FEE_SCALAR
+        opStackBlobBaseFeeScalar = BASE_ECOTONE_BLOB_BASE_FEE_SCALAR;
       }
     }
   }

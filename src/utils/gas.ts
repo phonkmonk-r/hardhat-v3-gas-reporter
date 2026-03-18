@@ -1,14 +1,14 @@
 import { serializeTransaction, getTransactionType, Hex, TransactionSerializableGeneric, TransactionSerializableLegacy } from 'viem';
-import { compress } from 'brotli-wasm';
+// brotli-wasm loaded lazily to avoid ESM/CJS cycle issues
 import {
   EVM_BASE_TX_COST,
   OPTIMISM_BEDROCK_DYNAMIC_OVERHEAD,
   OPTIMISM_BEDROCK_FIXED_OVERHEAD,
   RANDOM_R_COMPONENT,
   RANDOM_S_COMPONENT
-} from "../constants";
+} from "../constants.js";
 
-import { GasReporterOptions, JsonRpcTx } from "../types";
+import type { GasReporterOptions, JsonRpcTx } from "../types.js";
 
 /**
 ==========================
@@ -142,7 +142,9 @@ export function getOPStackDataGas(tx: JsonRpcTx): number {
 // ==========================
 // ARBITRUM OS20
 // ==========================
-export function getArbitrumL1Bytes(tx: JsonRpcTx) {
+export async function getArbitrumL1Bytes(tx: JsonRpcTx) {
+  const brotli = await import('brotli-wasm');
+  const compress = brotli.default?.compress ?? brotli.compress;
   const serializedTx = getSerializedTx(tx);
   const compressedTx = compress(Buffer.from(serializedTx), {quality: 2});
   const compressedLength = Buffer.from(compressedTx).toString('utf8').length;
@@ -249,10 +251,10 @@ export function getGasSubIntrinsic(data: string, gas: number) {
  * @param tx           JSONRPC formatted transaction
  * @returns
  */
-export function getCalldataGasForNetwork(
+export async function getCalldataGasForNetwork(
   options: GasReporterOptions,
   tx: JsonRpcTx
-) : number {
+) : Promise<number> {
   if (options.L2 === "optimism" || options.L2 === "base") {
     switch (options.optimismHardfork){
       case "bedrock": return getOptimismBedrockL1Gas(tx);

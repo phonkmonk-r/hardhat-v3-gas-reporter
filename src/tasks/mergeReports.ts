@@ -1,7 +1,6 @@
-import { HardhatPluginError } from "hardhat/plugins";
-import { HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
-import { TASK_GAS_REPORTER_MERGE_REPORTS } from "../task-names";
-import { GasReporterOutput } from "../types";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import { TASK_GAS_REPORTER_MERGE_REPORTS } from "../task-names.js";
+import type { GasReporterOutput } from "../types.js";
 
 /**
  * Tries to merge several gas reporter output objects into one.
@@ -21,7 +20,7 @@ export async function mergeReports(
     },
   };
 
-  const { HardhatGasReporterOutputValidator } = await import("../lib/validators/hardhat");
+  const { HardhatGasReporterOutputValidator } = await import("../lib/validators/hardhat.js");
 
   for (const [index, report] of reports.entries()) {
     const Validator = new HardhatGasReporterOutputValidator();
@@ -91,16 +90,16 @@ export async function subtaskMergeReportsImplementation(
 
 
 export async function taskMergeImplementation(
-  taskArguments: TaskArguments,
+  taskArguments: Record<string, any>,
   hre: HardhatRuntimeEnvironment
 ): Promise<void> {
   const path = await import("path");
   const { globSync } = await import("glob");
   const { uniq } = await import("lodash");
-  const { reportMerge } = await import("../utils/ui");
-  const { GasData } = await import("../lib/gasData");
-  const { setGasAndPriceRates } = await import("../utils/prices");
-  const { generateJSONData } = await import("../lib/render/json");
+  const { reportMerge } = await import("../utils/ui.js");
+  const { GasData } = await import("../lib/gasData.js");
+  const { setGasAndPriceRates } = await import("../utils/prices.js");
+  const { generateJSONData } = await import("../lib/render/json.js");
 
 
   const output = path.resolve(process.cwd(), taskArguments.output);
@@ -110,15 +109,14 @@ export async function taskMergeImplementation(
   const files = taskArgs.map((file) => path.resolve(file as string))
 
   if (files.length === 0) {
-    throw new HardhatPluginError(
-      `hardhat-gas-reporter`,
-      `No files found for the given input: ${taskArguments.input.join(" ")}`
+    throw new Error(
+      `[hardhat-gas-reporter] No files found for the given input: ${taskArguments.input.join(" ")}`
     );
   }
 
   reportMerge(files, output);
 
-  const result = await hre.run(TASK_GAS_REPORTER_MERGE_REPORTS, { inputFiles: files });
+  const result = await hre.tasks.getTask(TASK_GAS_REPORTER_MERGE_REPORTS).run({ inputFiles: files });
   const warnings = await setGasAndPriceRates(result.options);
   const data = new GasData(result.data.methods, result.data.deployments);
   await data.runAnalysis(hre, result.options);

@@ -1,7 +1,6 @@
-import { SolcConfig } from "hardhat/types";
 import { keccak256 } from "ethereum-cryptography/keccak";
 import { utf8ToBytes, bytesToHex } from "ethereum-cryptography/utils";
-import { SolcInfo } from "../types";
+import type { SolcInfo } from "../types.js";
 
 
 /**
@@ -29,7 +28,7 @@ export function getMethodID(contractName: string, code: string): string {
  * @param  {Object} solcConfig solidity config
  * @return {Object}          {version, optimizer, runs}
  */
-export function getSolcInfo(solcConfig: SolcConfig): SolcInfo {
+export function getSolcInfo(solcConfig: any): SolcInfo {
   const info: any = {};
   const optimizer = solcConfig.settings.optimizer;
   const viaIR = solcConfig.settings.viaIR

@@ -1,8 +1,8 @@
-import type {GasData} from "../gasData";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { CustomGasReporterResolver, GasReporterOptions, JsonRpcTx } from "../../types";
+import type { GasData } from "../gasData.js";
+import type { HardhatRuntimeEnvironment } from "hardhat/types/hre";
+import type { CustomGasReporterResolver, GasReporterOptions, JsonRpcTx } from "../../types.js";
 
-import { OZResolver } from "./oz";
+import { OZResolver } from "./oz.js";
 
 export class Resolver {
   public unresolvedCalls: number;
@@ -10,13 +10,19 @@ export class Resolver {
   public hre: HardhatRuntimeEnvironment;
   public resolveByProxy: Function;
 
-  constructor(hre: HardhatRuntimeEnvironment, options: GasReporterOptions, data: GasData) {
+  constructor(
+    hre: HardhatRuntimeEnvironment,
+    options: GasReporterOptions,
+    data: GasData
+  ) {
     this.unresolvedCalls = 0;
     this.data = data;
     this.hre = hre;
 
     if (options.proxyResolver !== undefined) {
-      this.resolveByProxy = (options.proxyResolver as CustomGasReporterResolver).resolve.bind(this);
+      this.resolveByProxy = (
+        options.proxyResolver as CustomGasReporterResolver
+      ).resolve.bind(this);
     } else if (hre.__hhgrec.usingOZ) {
       this.resolveByProxy = new OZResolver().resolve.bind(this);
     } else {
@@ -45,10 +51,15 @@ export class Resolver {
    * @param  {String} address contract address
    * @return {String}         contract name
    */
-  public async resolveByDeployedBytecode(address: string | null): Promise<string | null> {
+  public async resolveByDeployedBytecode(
+    address: string | null
+  ): Promise<string | null> {
     if (!address) return null;
 
-    const code = await this.hre.network.provider.send("eth_getCode", [address, "latest"]);
+    const code = (await this.hre.__hhgrec.provider!.request({
+      method: "eth_getCode",
+      params: [address, "latest"],
+    })) as string;
     const match = this.data.getContractByDeployedBytecode(code);
 
     if (match !== null) {
@@ -64,7 +75,9 @@ export class Resolver {
    * @param contractAddress
    * @returns
    */
-  public async resolveViaCache(contractAddress: string): Promise<string | null | undefined> {
+  public async resolveViaCache(
+    contractAddress: string
+  ): Promise<string | null | undefined> {
     if (contractAddress && contractAddress !== "0x") {
       const contractName = await this.data.getNameByAddress(contractAddress);
 

@@ -1,5 +1,5 @@
-import { JsonRpcTx, CustomGasReporterResolver } from "../../types";
-import { Resolver } from "./index";
+import type { JsonRpcTx, CustomGasReporterResolver } from "../../types.js";
+import type { Resolver } from "./index.js";
 
 
 /**

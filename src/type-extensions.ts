@@ -1,21 +1,19 @@
-import { GasReporterOptions, GasReporterExecutionContext } from "./types";
+import type { GasReporterOptions, GasReporterExecutionContext } from "./types.js";
 
 /* Type Extensions */
 declare module "hardhat/types/config" {
   interface HardhatConfig {
     gasReporter: Partial<GasReporterOptions>;
   }
-}
 
-declare module "hardhat/types/config" {
   interface HardhatUserConfig {
     gasReporter?: Partial<GasReporterOptions>;
   }
 }
 
-declare module "hardhat/types/runtime" {
+declare module "hardhat/types/hre" {
   export interface HardhatRuntimeEnvironment {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    __hhgrec: GasReporterExecutionContext
+    __hhgrec: GasReporterExecutionContext;
   }
 }
