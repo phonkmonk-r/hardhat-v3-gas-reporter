@@ -32,6 +32,7 @@
     "test": "scripts/run-tests.sh",
     "test:integration": "mocha test/integration/*.ts --timeout 100000 --exit",
     "test:unit": "mocha test/unit/*.ts --timeout 10000",
+    "prepare": "tsc --project tsconfig.prod.json",
     "prepublishOnly": "tsc --project tsconfig.prod.json",
     "build": "tsc --project tsconfig.prod.json",
     "buidl": "tsc",
