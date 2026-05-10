@@ -92,7 +92,19 @@ export async function getContracts(
       artifact = await hre.artifacts.readArtifact(artifact.contractName);
       name = artifact.contractName;
     } catch (e) {
-      name = path.relative(hre.config.paths.sources as unknown as string, qualifiedName);
+      // Hardhat 3 compat: hre.config.paths.sources is a profiles-map object
+      // ({ default, production, ... }), not a string as in Hardhat 2. Coerce
+      // to a usable string path at runtime — a pure type cast (e.g.
+      // `as unknown as string`) silences the compiler but still passes an
+      // Object to path.relative, which throws TypeError.
+      const sources = hre.config.paths.sources as unknown as
+        | string
+        | { default?: string; production?: string; [k: string]: string | undefined };
+      const sourcesPath =
+        typeof sources === "string"
+          ? sources
+          : sources?.default ?? sources?.production ?? "contracts";
+      name = path.relative(sourcesPath, qualifiedName);
     }
 
     const excludedMethods = await getExcludedMethodKeys(
